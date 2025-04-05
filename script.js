@@ -322,3 +322,55 @@ function showToast(message, type = 'info') {
         toast.classList.add('translate-y-20', 'opacity-0');
     }, 3000);
 }
+
+### ADD
+
+document.getElementById("order-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const side = document.getElementById("side").value;
+    const symbol = document.getElementById("symbol").value;
+    const quantity = document.getElementById("quantity").value;
+
+    const orderStatus = document.getElementById("order-status");
+    orderStatus.textContent = "Placing order...";
+
+    try {
+        const response = await fetch("http://localhost:8000/order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ side, symbol, quantity: parseFloat(quantity) }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            orderStatus.textContent = `✅ Order placed: ${data.orderId || 'Success'}`;
+            orderStatus.classList.remove("text-red-500");
+            orderStatus.classList.add("text-green-500");
+        } else {
+            orderStatus.textContent = `❌ Order failed: ${data.detail || 'Error'}`;
+            orderStatus.classList.remove("text-green-500");
+            orderStatus.classList.add("text-red-500");
+        }
+    } catch (err) {
+        orderStatus.textContent = "❌ Network error.";
+        orderStatus.classList.remove("text-green-500");
+        orderStatus.classList.add("text-red-500");
+    }
+});
+
+async function checkAPIStatus() {
+  try {
+    const response = await fetch('http://localhost:8000/ping'); // Check if this URL is correct
+    const data = await response.json();
+    if (response.ok) {
+      document.getElementById('api-status').innerText = "Connected"; // Update status text
+    } else {
+      document.getElementById('api-status').innerText = "API Error"; // Handle error response
+    }
+  } catch (error) {
+    document.getElementById('api-status').innerText = "Failed to connect";
+  }
+}
